@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse 
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
+from django.contrib.messages import constants
+from django.contrib import messages
 
 def cadastro(request):
     if request.method == "GET":
@@ -16,15 +18,15 @@ def cadastro(request):
         users = User.objects.filter(username=email)
         
         if users.exists():
-            print('Erro 1')
+            messages.add_message(request, constants.ERROR, 'Email já existe!!')
             return redirect('/usuarios/cadastro')
         
         if senha != confirmar_senha:
-            print('Erro')
+            messages.add_message(request, constants.ERROR, 'A senha e o confirmar senha deve ser iguais')
             return redirect('/usuarios/cadastro')
 
         if len(senha) < 6:
-            print('Erro 3')
+            messages.add_message(request, constants.ERROR, 'A senha deve possuir pelo menos 6 caracteres')
             return redirect('/usuarios/cadastro')
         
         try:
@@ -36,8 +38,9 @@ def cadastro(request):
                 last_name=last_name,
                 password=senha
             )
+            messages.add_message(request, constants.SUCCESS, 'Usuario criado com sucesso !!')
             return redirect('/usuarios/login/')
 
         except IntegrityError as e:
-            print('Err: Erro Interno do sistena', e)
+            messages.add_message(request, constants.ERROR, 'Err: erro interno do sistema')
             return redirect('/usuarios/cadastro')
